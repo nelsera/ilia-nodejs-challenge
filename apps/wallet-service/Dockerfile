@@ -7,7 +7,7 @@ FROM node:24-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build wallet-service
+RUN npm run build:wallet
 
 FROM node:24-alpine AS run
 WORKDIR /app
