@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ilia-postgres
+    environment:
+      POSTGRES_USER: ilia
+      POSTGRES_PASSWORD: ilia
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/user-service/Dockerfile
+    container_name: user-service
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgres://ilia:ilia@postgres:5432/users_db
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+
+  wallet-service:
+    build:
+      context: .
+      dockerfile: apps/wallet-service/Dockerfile
+    container_name: wallet-service
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgres://ilia:ilia@postgres:5432/wallet_db
+      USERS_SERVICE_URL: http://user-service:3001
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+      - user-service
+
+volumes:
+  pgdata:
