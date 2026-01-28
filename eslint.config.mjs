@@ -1,27 +1,36 @@
-import eslint from '@eslint/js';
+import js from '@eslint/js';
+import globals from 'globals';
 import tseslint from 'typescript-eslint';
-import prettier from 'eslint-config-prettier';
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**'],
+    ignores: [
+      'apps/**/generated/**',
+      '**/coverage/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/.next/**',
+      'commitlint.config.cjs',
+    ],
   },
-
-  eslint.configs.recommended,
+  js.configs.recommended,
   ...tseslint.configs.recommended,
-  prettier,
-
   {
-    files: ['**/*.ts'],
+    files: ['**/*.{ts,tsx,js,jsx}'],
     languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.json', './apps/*/tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
+      globals: {
+        ...globals.node,
+        ...globals.es2021,
       },
     },
-    rules: {
-      '@typescript-eslint/no-unused-vars': ['warn'],
-      '@typescript-eslint/no-explicit-any': 'warn',
+  },
+  {
+    files: ['**/*.spec.ts', '**/*.test.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+      },
     },
   },
 ];

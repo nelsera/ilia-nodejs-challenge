@@ -1,2 +1,2 @@
 CREATE DATABASE users_db;
-CREATE DATABASE wallet_db;
+CREATE DATABASE wallets_db;
