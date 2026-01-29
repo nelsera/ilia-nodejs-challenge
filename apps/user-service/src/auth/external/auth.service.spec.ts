@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
 import { AuthService } from './auth.service';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../../users/users.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -40,7 +40,7 @@ describe('AuthService', () => {
 
   it('signup: should create user and return token', async () => {
     configService.get.mockImplementation((key: string) => {
-      if (key === 'JWT_SECRET') return 'test-secret';
+      if (key === 'JWT_EXTERNAL_SECRET') return 'test-secret';
       if (key === 'JWT_EXPIRES_IN') return '10m';
       return undefined;
     });

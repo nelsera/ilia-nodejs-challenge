@@ -1,5 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -7,6 +8,8 @@ import { WalletModule } from './wallet-service.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(WalletModule);
+
+  const config = app.get(ConfigService);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -31,14 +34,18 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [process.env.RABBITMQ_URL!],
-      queue: process.env.WALLET_RABBITMQ_QUEUE!,
+      urls: [config.getOrThrow<string>('RABBITMQ_URL')],
+      queue: config.getOrThrow<string>('WALLET_RABBITMQ_QUEUE'),
       queueOptions: { durable: true },
+      noAck: false,
+      prefetchCount: 1,
     },
   });
 
   await app.startAllMicroservices();
-  await app.listen(process.env.PORT!);
+
+  const port = config.get<number>('PORT') ?? 3002;
+  await app.listen(port);
 }
 
 bootstrap();

@@ -3,8 +3,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { StringValue } from 'ms';
 
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
+import { AuthController } from './external/auth.controller';
+import { AuthService } from './external/auth.service';
 import { UsersModule } from '../users/users.module';
 
 @Module({
@@ -13,10 +13,10 @@ import { UsersModule } from '../users/users.module';
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const secret = config.get<string>('JWT_SECRET');
+        const secret = config.get<string>('JWT_EXTERNAL_SECRET');
 
         if (!secret) {
-          throw new Error('JWT_SECRET is required');
+          throw new Error('JWT_EXTERNAL_SECRET is required');
         }
 
         const expiresIn = config.get<StringValue | number>('JWT_EXPIRES_IN');

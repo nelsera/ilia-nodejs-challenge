@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import type { StringValue } from 'ms';
 import * as bcrypt from 'bcrypt';
 
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../../users/users.service';
 
 type AccessTokenPayload = {
   sub: string;
@@ -39,7 +39,7 @@ export class AuthService {
   }
 
   private async signToken(payload: AccessTokenPayload): Promise<string> {
-    const secret = this.config.get<string>('JWT_SECRET')!;
+    const secret = this.config.get<string>('JWT_EXTERNAL_SECRET')!;
 
     const expiresInFromEnv = this.config.get<string>('JWT_EXPIRES_IN');
 

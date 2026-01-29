@@ -3,21 +3,20 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-type JwtPayload = {
+export type InternalJwtPayload = {
   sub: string;
-  email?: string;
-  roles?: string[];
+  scope?: 'internal';
   iat?: number;
   exp?: number;
 };
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class InternalJwtStrategy extends PassportStrategy(Strategy, 'internal-jwt') {
   constructor(config: ConfigService) {
-    const secret = config.get<string>('JWT_SECRET');
+    const secret = config.get<string>('JWT_INTERNAL_SECRET');
 
     if (!secret) {
-      throw new Error('JWT_SECRET is missing');
+      throw new Error('JWT_INTERNAL_SECRET is missing');
     }
 
     super({
@@ -27,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(payload: InternalJwtPayload) {
     return payload;
   }
 }

@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { WalletController } from './wallet-service.controller';
 import { WalletService } from './wallet-service.service';
-import { type CurrentUserPayload } from './auth/current-user.decorator';
+import { type CurrentUserPayload } from './auth/external/current-user.decorator';
 import { type CreditWalletDto } from './dto/credit-wallet.dto';
 import { type DebitWalletDto } from './dto/debit-wallet.dto';
 

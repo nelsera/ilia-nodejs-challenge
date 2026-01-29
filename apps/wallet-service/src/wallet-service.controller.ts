@@ -5,8 +5,8 @@ import { WalletService } from './wallet-service.service';
 import { CreditWalletDto } from './dto/credit-wallet.dto';
 import { DebitWalletDto } from './dto/debit-wallet.dto';
 import { WalletBalanceDto } from './dto/wallet-balance.dto';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
-import { CurrentUser, type CurrentUserPayload } from './auth/current-user.decorator';
+import { JwtAuthGuard } from './auth/external/jwt-auth.guard';
+import { CurrentUser, type CurrentUserPayload } from './auth/external/current-user.decorator';
 
 @ApiTags('Wallet')
 @ApiBearerAuth()

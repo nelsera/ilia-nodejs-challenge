@@ -11,13 +11,13 @@ describe('JwtStrategy', () => {
     return config as unknown as ConfigService;
   };
 
-  it('should throw if JWT_SECRET is missing', () => {
+  it('should throw if JWT_EXTERNAL_SECRET is missing', () => {
     const config = makeConfig(undefined);
 
-    expect(() => new JwtStrategy(config)).toThrow('JWT_SECRET is missing');
+    expect(() => new JwtStrategy(config)).toThrow('JWT_EXTERNAL_SECRET is missing');
   });
 
-  it('should create strategy when JWT_SECRET is provided', () => {
+  it('should create strategy when JWT_EXTERNAL_SECRET is provided', () => {
     const config = makeConfig('super-secret');
 
     expect(() => new JwtStrategy(config)).not.toThrow();
