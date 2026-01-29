@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
-import { WalletServiceController } from './wallet-service.controller';
-import { WalletServiceService } from './wallet-service.service';
-import { MessagingModule } from './messaging/messaging.module';
+import { ConfigModule } from '@nestjs/config';
+
+import { WalletController } from './wallet-service.controller';
+import { WalletService } from './wallet-service.service';
+import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [MessagingModule],
-  controllers: [WalletServiceController],
-  providers: [WalletServiceService],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule],
+  controllers: [WalletController],
+  providers: [WalletService],
 })
-export class WalletServiceModule {}
+export class WalletModule {}

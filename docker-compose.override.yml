@@ -1,0 +1,16 @@
+services:
+  user-service:
+    command: npm run start:user
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+
+  wallet-service:
+    command: npm run start:wallet
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
