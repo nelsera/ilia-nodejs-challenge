@@ -1,98 +1,346 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# ilia-nodejs-challenge
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This repository contains a technical challenge designed to assess back-end development skills using Node.js in a production-oriented scenario.  
+The focus is on microservices architecture, security, automated testing, and overall code quality.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+The solution emphasizes clear service boundaries, explicit architectural decisions, and secure communication between services.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Project Overview
 
-## Project setup
+The system is composed of two independent services:
 
-```bash
-$ npm install
+- Users Service  
+  Responsible for user registration, authentication, and issuing JWT tokens for external consumers.
+
+- Wallet Service  
+  Responsible for managing user wallets, balances, transactions, and exposing wallet-related operations.
+
+Each service is isolated, owns its data, and communicates through well-defined APIs.
+
+---
+
+## Architecture Overview
+
+- Node.js (LTS)
+- NestJS framework
+- REST-based inter-service communication
+- JWT authentication
+  - External tokens for user access
+  - Internal tokens for service-to-service communication
+- Relational database (PostgreSQL via Prisma, SQLite possible for local execution)
+- Automated testing with Jest and Supertest
+- Docker and Docker Compose support
+
+```
+Client
+  |
+  v
+Users Service ----(internal JWT)----> Wallet Service
+  |
+  +----(external JWT)---------------->
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## Authentication and Security
 
-# watch mode
-$ npm run start:dev
+### External Authentication
 
-# production mode
-$ npm run start:prod
+- Users authenticate via the Users Service
+- After signup or login, an external JWT is issued
+- This token is required to access user-facing Wallet Service endpoints
+
+### Internal Authentication
+
+- Internal communication uses JWTs signed with a separate secret
+- Wallet Service validates internal tokens only on internal routes
+- External tokens are not allowed to access internal endpoints
+
+### Security Considerations
+
+- Distinct secrets for external and internal JWTs
+- Separate authentication strategies and guards
+- Clear authorization boundaries between services
+- Consistent HTTP status codes for authentication and authorization errors
+
+---
+
+## Services
+
+### Users Service
+
+Responsibilities:
+
+- User registration
+- User authentication
+- JWT issuance
+- Triggering wallet creation via internal communication
+
+Endpoints:
+
+```
+POST /auth/signup
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```json
+{
+  "email": "maria@email.com",
+  "password": "123456"
+}
 ```
 
-## Deployment
+User registration triggers an internal request to the Wallet Service to create a wallet for the new user.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```
+POST /auth/login
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+```json
+{
+  "email": "maria@email.com",
+  "password": "123456"
+}
+```
 
-## Resources
+Response:
 
-Check out a few resources that may come in handy when working with NestJS:
+```json
+{
+  "token": "external_jwt_token"
+}
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+### Wallet Service
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Responsibilities:
 
-## Stay in touch
+- Create and manage wallets
+- Calculate balances
+- Register credit and debit transactions
+- Expose transaction history
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+All user-facing endpoints require an external JWT.
 
-## License
+#### User Wallet Endpoints
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Get or create the authenticated user's wallet:
+
+```
+POST /wallets/me
+Authorization: Bearer <external-jwt>
+```
+
+Get the authenticated user's wallet:
+
+```
+GET /wallets/me
+Authorization: Bearer <external-jwt>
+```
+
+Credit wallet (amount in cents):
+
+```
+POST /wallets/me/credit
+Authorization: Bearer <external-jwt>
+```
+
+```json
+{
+  "amount": 10000
+}
+```
+
+Debit wallet (amount in cents):
+
+```
+POST /wallets/me/debit
+Authorization: Bearer <external-jwt>
+```
+
+```json
+{
+  "amount": 5000
+}
+```
+
+Get wallet balance:
+
+```
+GET /wallets/me/balance
+Authorization: Bearer <external-jwt>
+```
+
+Response:
+
+```json
+{
+  "balance": 5000
+}
+```
+
+List wallet transactions:
+
+```
+GET /wallets/me/transactions
+Authorization: Bearer <external-jwt>
+```
+
+---
+
+#### Internal Wallet Endpoints
+
+Get or create a wallet for a specific user (internal only):
+
+```
+POST /internal/wallets/{userId}
+Authorization: Bearer <internal-jwt>
+```
+
+This endpoint is used exclusively for service-to-service communication and is not accessible with external tokens.
+
+---
+
+## Inter-Service Communication
+
+- Communication between Users Service and Wallet Service is mandatory
+- Implemented using REST
+- Wallet creation is automatically triggered after user registration
+- Internal endpoints are protected using a dedicated authentication mechanism
+
+---
+
+## Automated Testing
+
+The project includes automated tests covering:
+
+- Unit tests for core business logic
+- Integration tests for main endpoints
+- Authentication and authorization flows
+- User and wallet interaction scenarios
+
+Tools used:
+
+- Jest
+- Supertest
+
+Run all tests:
+
+```
+npm test
+```
+
+---
+
+## Running with Docker
+
+Requirements:
+
+- Docker
+- Docker Compose
+
+Start all services:
+
+```
+docker compose up
+```
+
+---
+
+## Running Locally (Without Docker)
+
+### Install dependencies
+
+```
+npm install
+```
+
+### Start Users Service
+
+```
+npm run start:user
+```
+
+### Start Wallet Service
+
+```
+npm run start:wallet
+```
+
+Each service runs independently and must be started in a separate terminal.
+
+---
+
+## Code Quality and Tooling
+
+- ESLint for linting
+- Prettier for formatting
+- Husky and lint-staged for pre-commit hooks
+- Coverage thresholds enforced via Jest
+
+Useful commands:
+
+```
+npm run lint
+npm run lint:fix
+npm run format
+npm run test:cov
+```
+
+---
+
+## API Documentation
+
+Each service exposes Swagger/OpenAPI documentation, including:
+
+- Available endpoints
+- Authentication configuration
+- Request and response examples
+- Error responses
+
+---
+
+## Evaluation Criteria Coverage
+
+This solution addresses the following evaluation points:
+
+- Clear microservices separation
+- Secure authentication model
+- Organized and readable codebase
+- Automated testing strategy
+- Proper error handling
+- Documentation
+- Adherence to clean code and SOLID principles
+
+---
+
+## Strengths
+
+- Clear distinction between external and internal APIs
+- Secure service-to-service communication
+- Consistent financial domain modeling
+- Testable and maintainable architecture
+- Strong focus on code quality and tooling
+- Docker-ready development environment
+
+---
+
+## Possible Improvements
+
+- Asynchronous communication using a message broker
+- Idempotency handling for financial operations
+- Distributed tracing and metrics
+- Centralized logging
+- Rate limiting
+- Database migrations per service
+- CI/CD pipeline integration
+
+---
+
+## Final Notes
+
+The implementation focuses on architectural clarity and correctness rather than feature completeness.  
+Trade-offs were made consciously to keep the solution simple while preserving realistic production concerns.
