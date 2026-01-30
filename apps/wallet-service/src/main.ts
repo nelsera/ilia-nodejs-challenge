@@ -9,6 +9,12 @@ import { WalletModule } from './wallet-service.module';
 async function bootstrap() {
   const app = await NestFactory.create(WalletModule);
 
+  app.enableCors({
+    origin: ['http://localhost:5173', 'https://ilia-nodejs-challenge.vercel.app'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   const config = app.get(ConfigService);
 
   app.useGlobalPipes(

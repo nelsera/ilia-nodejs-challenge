@@ -8,8 +8,8 @@
   "scripts": {
     "start:user": "nest start user-service --watch",
     "start:wallet": "nest start wallet-service --watch",
-    "build:user": "nest build user-service",
-    "build:wallet": "nest build wallet-service",
+    "build:user": "npx nest build user-service",
+    "build:wallet": "npx nest build wallet-service",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,js,json,yml,md}\"",
@@ -102,7 +102,8 @@
       "!apps/**/test/**",
       "!**/dist/**",
       "!**/node_modules/**",
-      "!**/generated/**"
+      "!**/generated/**",
+      "!**/web/**"
     ],
     "coverageDirectory": "./coverage",
     "coverageReporters": [

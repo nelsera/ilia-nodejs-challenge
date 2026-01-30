@@ -12,6 +12,7 @@ export default [
       '**/build/**',
       '**/.next/**',
       'commitlint.config.cjs',
+      '**/web/**',
     ],
   },
   js.configs.recommended,

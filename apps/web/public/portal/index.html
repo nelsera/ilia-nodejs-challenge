@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ília Challenge | Portal</title>
+    <meta
+      name="description"
+      content="Project portal with links to Frontend, Swagger docs and Test Coverage."
+    />
+
+    <style>
+      :root {
+        --bg: #f7f7f8;
+        --text: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --card: #ffffff;
+        --shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+        --btn: #111827;
+        --btnText: #ffffff;
+        --btnHover: #0b1220;
+        --chip: #f3f4f6;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 44px 18px 56px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+      }
+
+      .github-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--chip);
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .github-link:hover {
+        filter: brightness(0.98);
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .card h2 {
+        margin: 0 0 12px;
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 0;
+        border-top: 1px solid var(--border);
+      }
+      .row:first-of-type {
+        border-top: 0;
+        padding-top: 0;
+      }
+      .row:last-of-type {
+        padding-bottom: 0;
+      }
+
+      .label {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        min-width: 0;
+      }
+
+      .label strong {
+        font-size: 14px;
+        font-weight: 750;
+        letter-spacing: -0.01em;
+      }
+
+      .label span {
+        font-size: 12px;
+        color: var(--muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 540px;
+      }
+
+      button.linkbtn {
+        appearance: none;
+        border: 1px solid rgba(17, 24, 39, 0.12);
+        background: var(--btn);
+        color: var(--btnText);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-weight: 800;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+        box-shadow: 0 8px 20px rgba(17, 24, 39, 0.12);
+        transition:
+          transform 120ms ease,
+          filter 120ms ease;
+      }
+
+      button.linkbtn:hover {
+        filter: brightness(0.96);
+        transform: translateY(-1px);
+        background: var(--btnHover);
+      }
+
+      /* Modal */
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        z-index: 50;
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal-panel {
+        width: min(1200px, 100%);
+        height: min(86vh, 920px);
+        background: #fff;
+        border-radius: 0; /* no rounded corners */
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .modal-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        background: #fff;
+      }
+
+      .modal-title {
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: -0.01em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .ghostbtn {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 0; /* keep it square too */
+        padding: 8px 10px;
+        font-weight: 800;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .ghostbtn:hover {
+        background: #f9fafb;
+      }
+
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #fff;
+      }
+
+      @media (max-width: 560px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .label span {
+          max-width: 250px;
+        }
+        .modal-panel {
+          height: 90vh;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="container">
+      <header>
+        <h1>Ília Node.js Challenge</h1>
+
+        <!-- GitHub must always open in a new tab -->
+        <a
+          class="github-link"
+          href="https://github.com/nelsera/ilia-nodejs-challenge"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Open GitHub repository"
+        >
+          GitHub Repo
+        </a>
+      </header>
+
+      <section class="card">
+        <h2>Links</h2>
+
+        <div class="row">
+          <div class="label">
+            <strong>Frontend</strong>
+            <span>https://ilia-nodejs-challenge.vercel.app/</span>
+          </div>
+          <button
+            class="linkbtn"
+            data-title="Frontend"
+            data-url="https://ilia-nodejs-challenge.vercel.app/"
+          >
+            Open
+          </button>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <strong>Users Swagger</strong>
+            <span>https://ilia-user-service.onrender.com/docs</span>
+          </div>
+          <button
+            class="linkbtn"
+            data-title="Users Swagger"
+            data-url="https://ilia-user-service.onrender.com/docs"
+          >
+            Open
+          </button>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <strong>Wallet Swagger</strong>
+            <span>https://ilia-wallet-service.onrender.com/docs</span>
+          </div>
+          <button
+            class="linkbtn"
+            data-title="Wallet Swagger"
+            data-url="https://ilia-wallet-service.onrender.com/docs"
+          >
+            Open
+          </button>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <strong>Test Coverage</strong>
+            <span>https://ilia-nodejs-challenge.vercel.app/portal/coverage/index.html</span>
+          </div>
+          <button
+            class="linkbtn"
+            data-title="Test Coverage"
+            data-url="https://ilia-nodejs-challenge.vercel.app/portal/coverage/index.html"
+          >
+            Open
+          </button>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <strong>Repository</strong>
+            <span>https://github.com/nelsera/ilia-nodejs-challenge</span>
+          </div>
+
+          <!-- Repository row must open in a new tab too -->
+          <button
+            class="linkbtn"
+            data-newtab="true"
+            data-title="GitHub Repository"
+            data-url="https://github.com/nelsera/ilia-nodejs-challenge"
+          >
+            Open
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal -->
+    <div class="modal" id="modal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-label="Preview">
+        <div class="modal-topbar">
+          <div class="modal-title" id="modalTitle">Preview</div>
+          <div class="modal-actions">
+            <button class="ghostbtn" id="openNewTab">Open in new tab</button>
+            <button class="ghostbtn" id="closeModal">Close</button>
+          </div>
+        </div>
+        <iframe id="modalFrame" title="Preview iframe"></iframe>
+      </div>
+    </div>
+
+    <script>
+      const modal = document.getElementById('modal');
+      const frame = document.getElementById('modalFrame');
+      const title = document.getElementById('modalTitle');
+      const closeBtn = document.getElementById('closeModal');
+      const openNewTab = document.getElementById('openNewTab');
+
+      let currentUrl = '';
+
+      function openModal(t, url) {
+        currentUrl = url;
+        title.textContent = t;
+        frame.src = url;
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal() {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        frame.src = 'about:blank';
+        document.body.style.overflow = '';
+        currentUrl = '';
+      }
+
+      document.querySelectorAll('button[data-url]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const url = btn.dataset.url;
+          const t = btn.dataset.title || 'Preview';
+          const forceNewTab = btn.dataset.newtab === 'true';
+
+          if (forceNewTab) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+            return;
+          }
+
+          openModal(t, url);
+        });
+      });
+
+      closeBtn.addEventListener('click', closeModal);
+
+      openNewTab.addEventListener('click', () => {
+        if (currentUrl) window.open(currentUrl, '_blank', 'noopener,noreferrer');
+      });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+      });
+    </script>
+  </body>
+</html>

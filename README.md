@@ -1,23 +1,119 @@
 # ilia-nodejs-challenge
 
-This repository contains a technical challenge designed to assess back-end development skills using Node.js in a production-oriented scenario.  
-The focus is on microservices architecture, security, automated testing, and overall code quality.
+This repository contains a technical challenge designed to assess back-end development skills using Node.js in a production-oriented scenario.
 
-The solution emphasizes clear service boundaries, explicit architectural decisions, and secure communication between services.
+The project focuses on microservices architecture, secure authentication, asynchronous communication, clear service boundaries, automated testing, and overall code quality.
+
+In addition to the required back-end services, a simple front-end application was implemented to demonstrate end-to-end integration and real consumption of the APIs.
+
+---
+
+## Live Project Links
+
+Central portal with all deliverables:
+
+- Project Portal  
+  https://ilia-nodejs-challenge.vercel.app/portal
+
+Individual links:
+
+- Frontend (Web App)  
+  https://ilia-nodejs-challenge.vercel.app/
+
+- Users Service – Swagger  
+  https://ilia-user-service.onrender.com/docs
+
+- Wallet Service – Swagger  
+  https://ilia-wallet-service.onrender.com/docs
+
+- Test Coverage Report  
+  https://ilia-nodejs-challenge.vercel.app/coverage/index.html
+
+- GitHub Repository  
+  https://github.com/nelsera/ilia-nodejs-challenge
 
 ---
 
 ## Project Overview
 
-The system is composed of two independent services:
+The system is composed of three independent applications:
 
-- Users Service  
-  Responsible for user registration, authentication, and issuing JWT tokens for external consumers.
+### Users Service
 
-- Wallet Service  
-  Responsible for managing user wallets, balances, transactions, and exposing wallet-related operations.
+Responsible for:
 
-Each service is isolated, owns its data, and communicates through well-defined APIs.
+- User registration
+- User authentication
+- Issuing JWT tokens for external consumers
+- Publishing user lifecycle events via RabbitMQ
+
+### Wallet Service
+
+Responsible for:
+
+- Managing user wallets
+- Handling balances and transactions
+- Consuming user-related events asynchronously
+
+### Web (Front-end)
+
+A React-based application that:
+
+- Consumes the Users and Wallet APIs
+- Demonstrates real authentication and wallet usage
+- Validates the complete end-to-end flow
+
+Each application is isolated, owns its responsibilities, and communicates through well-defined contracts.
+
+---
+
+## Repository Structure
+
+```text
+apps/
+├── user-service    # Users microservice (NestJS)
+├── wallet-service  # Wallet microservice (NestJS)
+└── web             # Front-end application (React + Vite)
+```
+
+---
+
+## Architecture Diagram
+
+```text
+                        +--------------------+
+                        |    Web Client      |
+                        |  (React + Vite)    |
+                        +----------+---------+
+                                   |
+                      REST + External JWT
+                                   |
+          +------------------------+------------------------+
+          |                                                 |
++---------v----------+                          +-----------v-----------+
+|    Users Service   |                          |     Wallet Service    |
+|     (NestJS)       |                          |        (NestJS)       |
+|--------------------|                          |-----------------------|
+| - Auth (JWT)       |                          | - Wallet management   |
+| - User creation   |                          | - Transactions        |
+| - Event publisher |                          | - Event consumer      |
++---------+----------+                          +-----------+-----------+
+          |                                                             |
+          | publish user.created + internal JWT                          |
+          |                                                             |
+          v                                                             v
+    +------------------+                                   +------------------+
+    |     RabbitMQ     |---------------------------------->|   Wallet Logic   |
+    | (Event Broker)   |        async event delivery       |  (event handler) |
+    +------------------+                                   +------------------+
+
+          |                                                             |
+          v                                                             v
++---------------------+                                 +---------------------+
+|   Users Database    |                                 |  Wallet Database    |
+| (PostgreSQL + ORM)  |                                 | (PostgreSQL + ORM)  |
++---------------------+                                 +---------------------+
+```
 
 ---
 
@@ -25,22 +121,98 @@ Each service is isolated, owns its data, and communicates through well-defined A
 
 - Node.js (LTS)
 - NestJS framework
-- REST-based inter-service communication
+- React + Vite for front-end
+- REST-based communication (client-facing)
+- Asynchronous messaging with RabbitMQ (service-to-service)
 - JWT authentication
-  - External tokens for user access
-  - Internal tokens for service-to-service communication
-- Relational database (PostgreSQL via Prisma, SQLite possible for local execution)
+  - External JWTs for client access
+  - Internal JWTs embedded in events
+- Relational database (PostgreSQL via Prisma)
 - Automated testing with Jest and Supertest
 - Docker and Docker Compose support
 
+---
+
+## Communication Flow
+
+```text
+(1) Login / Signup
+Web Client --(REST + external JWT)--> Users Service
+
+(2) Wallet Operations
+Web Client --(REST + external JWT)--> Wallet Service
+
+(3) Wallet Provisioning (async)
+Users Service --(emit user.created + internal JWT)--> RabbitMQ
+RabbitMQ --(deliver event)--> Wallet Service
 ```
-Client
-  |
-  v
-Users Service ----(internal JWT)----> Wallet Service
-  |
-  +----(external JWT)---------------->
-```
+
+---
+
+## Technology Stack and Design Decisions
+
+### Node.js (LTS)
+
+Chosen for performance, scalability, and ecosystem maturity.
+
+### NestJS
+
+Provides modular architecture, dependency injection, and enterprise-grade patterns suitable for microservices.
+
+### React + Vite
+
+Used for fast development and to validate real-world API consumption in an end-to-end scenario.
+
+### JWT Authentication
+
+Two authentication strategies are used:
+
+- **External JWTs**  
+  Issued by the Users Service and used by the Web Client.
+
+- **Internal JWTs**  
+  Generated by the Users Service and embedded in RabbitMQ event payloads.
+  Validated by the Wallet Service before processing events.
+
+This enforces strict boundaries between external consumers and internal services.
+
+### REST Communication (Client-facing)
+
+REST is used for client-facing APIs to ensure:
+
+- Simplicity
+- Clear contracts
+- Easy debugging
+- Front-end compatibility
+
+### RabbitMQ (Asynchronous Messaging)
+
+RabbitMQ is used for asynchronous, event-driven communication.
+
+When a user is created, the Users Service publishes a `user.created` event containing:
+
+- User ID
+- User email
+- Internal JWT
+- Timestamp
+
+The Wallet Service consumes this event and validates the internal token before executing wallet provisioning logic.
+
+This approach:
+
+- Decouples services
+- Improves resilience
+- Enables scalability
+- Avoids tight synchronous dependencies
+
+### Prisma + Relational Database
+
+Relational databases ensure consistency and integrity, especially for financial data.
+Prisma provides type-safe access and clear schema evolution.
+
+### Docker and Docker Compose
+
+Standardizes development and simulates production-like environments.
 
 ---
 
@@ -48,299 +220,72 @@ Users Service ----(internal JWT)----> Wallet Service
 
 ### External Authentication
 
-- Users authenticate via the Users Service
-- After signup or login, an external JWT is issued
-- This token is required to access user-facing Wallet Service endpoints
+- External JWT issued after login/signup
+- Required for all user-facing Wallet endpoints
 
 ### Internal Authentication
 
-- Internal communication uses JWTs signed with a separate secret
-- Wallet Service validates internal tokens only on internal routes
-- External tokens are not allowed to access internal endpoints
+- Internal JWT embedded in RabbitMQ events
+- Validated before event processing
 
 ### Security Considerations
 
-- Distinct secrets for external and internal JWTs
-- Separate authentication strategies and guards
-- Clear authorization boundaries between services
-- Consistent HTTP status codes for authentication and authorization errors
-
----
-
-## Services
-
-### Users Service
-
-Responsibilities:
-
-- User registration
-- User authentication
-- JWT issuance
-- Triggering wallet creation via internal communication
-
-Endpoints:
-
-```
-POST /auth/signup
-```
-
-```json
-{
-  "email": "maria@email.com",
-  "password": "123456"
-}
-```
-
-User registration triggers an internal request to the Wallet Service to create a wallet for the new user.
-
-```
-POST /auth/login
-```
-
-```json
-{
-  "email": "maria@email.com",
-  "password": "123456"
-}
-```
-
-Response:
-
-```json
-{
-  "token": "external_jwt_token"
-}
-```
-
----
-
-### Wallet Service
-
-Responsibilities:
-
-- Create and manage wallets
-- Calculate balances
-- Register credit and debit transactions
-- Expose transaction history
-
-All user-facing endpoints require an external JWT.
-
-#### User Wallet Endpoints
-
-Get or create the authenticated user's wallet:
-
-```
-POST /wallets/me
-Authorization: Bearer <external-jwt>
-```
-
-Get the authenticated user's wallet:
-
-```
-GET /wallets/me
-Authorization: Bearer <external-jwt>
-```
-
-Credit wallet (amount in cents):
-
-```
-POST /wallets/me/credit
-Authorization: Bearer <external-jwt>
-```
-
-```json
-{
-  "amount": 10000
-}
-```
-
-Debit wallet (amount in cents):
-
-```
-POST /wallets/me/debit
-Authorization: Bearer <external-jwt>
-```
-
-```json
-{
-  "amount": 5000
-}
-```
-
-Get wallet balance:
-
-```
-GET /wallets/me/balance
-Authorization: Bearer <external-jwt>
-```
-
-Response:
-
-```json
-{
-  "balance": 5000
-}
-```
-
-List wallet transactions:
-
-```
-GET /wallets/me/transactions
-Authorization: Bearer <external-jwt>
-```
-
----
-
-#### Internal Wallet Endpoints
-
-Get or create a wallet for a specific user (internal only):
-
-```
-POST /internal/wallets/{userId}
-Authorization: Bearer <internal-jwt>
-```
-
-This endpoint is used exclusively for service-to-service communication and is not accessible with external tokens.
-
----
-
-## Inter-Service Communication
-
-- Communication between Users Service and Wallet Service is mandatory
-- Implemented using REST
-- Wallet creation is automatically triggered after user registration
-- Internal endpoints are protected using a dedicated authentication mechanism
+- Separate secrets for internal and external tokens
+- Explicit trust boundaries
+- Predictable and consistent HTTP responses
 
 ---
 
 ## Automated Testing
 
-The project includes automated tests covering:
+- Unit tests
+- Integration tests
+- Authentication and authorization coverage
 
-- Unit tests for core business logic
-- Integration tests for main endpoints
-- Authentication and authorization flows
-- User and wallet interaction scenarios
-
-Tools used:
+Tools:
 
 - Jest
 - Supertest
 
-Run all tests:
+Commands:
 
-```
+```bash
 npm test
+npm run test:cov
 ```
 
 ---
 
 ## Running with Docker
 
-Requirements:
-
-- Docker
-- Docker Compose
-
-Start all services:
-
-```
+```bash
 docker compose up
 ```
 
 ---
 
-## Running Locally (Without Docker)
+## Running Locally
 
-### Install dependencies
-
-```
+```bash
 npm install
-```
-
-### Start Users Service
-
-```
 npm run start:user
-```
-
-### Start Wallet Service
-
-```
 npm run start:wallet
-```
 
-Each service runs independently and must be started in a separate terminal.
-
----
-
-## Code Quality and Tooling
-
-- ESLint for linting
-- Prettier for formatting
-- Husky and lint-staged for pre-commit hooks
-- Coverage thresholds enforced via Jest
-
-Useful commands:
-
-```
-npm run lint
-npm run lint:fix
-npm run format
-npm run test:cov
+cd apps/web
+npm install
+npm run dev
 ```
 
 ---
 
-## API Documentation
+## Possible Future Improvements
 
-Each service exposes Swagger/OpenAPI documentation, including:
+Although the current solution fully addresses the proposed challenge, there are several improvements that could be implemented in a real-world or long-term scenario:
 
-- Available endpoints
-- Authentication configuration
-- Request and response examples
-- Error responses
-
----
-
-## Evaluation Criteria Coverage
-
-This solution addresses the following evaluation points:
-
-- Clear microservices separation
-- Secure authentication model
-- Organized and readable codebase
-- Automated testing strategy
-- Proper error handling
-- Documentation
-- Adherence to clean code and SOLID principles
-
----
-
-## Strengths
-
-- Clear distinction between external and internal APIs
-- Secure service-to-service communication
-- Consistent financial domain modeling
-- Testable and maintainable architecture
-- Strong focus on code quality and tooling
-- Docker-ready development environment
-
----
-
-## Possible Improvements
-
-- Asynchronous communication using a message broker
-- Idempotency handling for financial operations
-- Distributed tracing and metrics
-- Centralized logging
-- Rate limiting
-- Database migrations per service
-- CI/CD pipeline integration
-
----
-
-## Final Notes
-
-The implementation focuses on architectural clarity and correctness rather than feature completeness.  
-Trade-offs were made consciously to keep the solution simple while preserving realistic production concerns.
+- Add distributed tracing (e.g. OpenTelemetry) to improve observability across services
+- Introduce a centralized API Gateway for routing, rate limiting and security policies
+- Improve resiliency with retries, circuit breakers and dead-letter queues for RabbitMQ
+- Add contract testing between services to prevent breaking changes
+- Implement refresh tokens and token rotation strategies
+- Expand domain events and asynchronous workflows for better scalability
+- Introduce CI/CD pipelines with automated quality gates and coverage thresholds

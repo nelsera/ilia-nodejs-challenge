@@ -11,8 +11,6 @@ type WalletBalance = {
 const USERS_BASE_URL = process.env.USERS_BASE_URL ?? 'http://localhost:3001';
 const WALLET_BASE_URL = process.env.WALLET_BASE_URL ?? 'http://localhost:3002';
 
-const VALID_USER_ID_UUID = '00000000-0000-4000-8000-000000000000';
-
 const makeUniqueEmail = (prefix: string) =>
   `${prefix}.${Date.now()}.${Math.random().toString(16).slice(2)}@test.com`;
 
@@ -33,7 +31,9 @@ const extractJwtTokenFromBody = (body: unknown): string | undefined => {
 
   const directToken = responseBody.accessToken;
 
-  if (typeof directToken === 'string' && directToken.length > 10) return directToken;
+  if (typeof directToken === 'string' && directToken.length > 10) {
+    return directToken;
+  }
 
   const dataField = responseBody.data;
 
@@ -52,6 +52,7 @@ const extractJwtTokenFromBody = (body: unknown): string | undefined => {
 
 async function signupAndLogin(): Promise<{ token: string; email: string }> {
   const email = makeUniqueEmail('wallet-e2e');
+
   const password = '123456';
 
   await request(USERS_BASE_URL)
@@ -113,11 +114,11 @@ describe('Wallet Service (e2e) - main flow', () => {
     expect(firstBalance.credits).toBe(1000);
     expect(firstBalance.debits).toBe(0);
 
-    // 4) Debit -400
+    // 4) Debit -400 (userId comes from JWT subject)
     await request(WALLET_BASE_URL)
       .post('/wallets/me/debit')
       .set('Authorization', `Bearer ${token}`)
-      .send({ userId: VALID_USER_ID_UUID, amount: 400, description: 'test debit' })
+      .send({ amount: 400, description: 'test debit' })
       .expect(expectStatus200or201);
 
     // 5) Balance should be 600
@@ -136,7 +137,7 @@ describe('Wallet Service (e2e) - main flow', () => {
     await request(WALLET_BASE_URL)
       .post('/wallets/me/debit')
       .set('Authorization', `Bearer ${token}`)
-      .send({ userId: VALID_USER_ID_UUID, amount: 999999, description: 'should fail' })
+      .send({ amount: 999999, description: 'should fail' })
       .expect(400);
   });
 });

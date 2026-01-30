@@ -8,6 +8,12 @@ import { UserServiceModule } from './user-service.module';
 async function bootstrap() {
   const app = await NestFactory.create(UserServiceModule);
 
+  app.enableCors({
+    origin: ['http://localhost:5173', 'https://ilia-nodejs-challenge.vercel.app'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   const config = app.get(ConfigService);
 
   app.useGlobalPipes(
